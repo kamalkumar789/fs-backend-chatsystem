@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.chatsystem.dtos.Sockets.SendMessage;
 import com.corundumstudio.socketio.SocketIOClient;
 import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
@@ -52,6 +53,19 @@ public class SocketEvents {
                 System.out.println("Socket is disconnected " + userId);
                 connections.remove(userId);
             }    
-        });        
+        });
+        
+        socketIOServer.addEventListener("send_message", SendMessage.class, (client, data, ackSender) -> {
+
+            String receiverId = data.getReceiverId();
+
+            if(!connections.containsKey(receiverId)){
+                return ;
+            }
+
+            SocketIOClient receiverSocket = connections.get(receiverId);
+            receiverSocket.sendEvent("receiver_message", data);
+
+        });
     }
 }
